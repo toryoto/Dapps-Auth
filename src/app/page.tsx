@@ -15,11 +15,11 @@ export default function HomePage() {
   }, [user, router]);
 
   const handleMetaMaskLogin = async () => {
-    await login();
+    await login('metamask');
   };
 
-  const handleWeb3AuthLogin = () => {
-    alert('Web3Auth login is not implemented yet.');
+  const handleWeb3AuthLogin = async () => {
+    await login('web3auth');
   };
 
   if (user) {

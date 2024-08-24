@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase/supabase';
 
 export async function POST(req: Request) {
-  const { wallet_address } = await req.json();
+  const { wallet_address, auth_type } = await req.json();
 
   try {
     const { data, error } = await supabase
       .from('users')
-      .upsert({ wallet_address, auth_type: 'MetaMask' }, { onConflict: 'wallet_address' })
+      .upsert({ wallet_address, auth_type }, { onConflict: 'wallet_address' })
       .select()
       .single();
 
