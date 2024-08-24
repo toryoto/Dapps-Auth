@@ -87,6 +87,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const data = await callApi(address, 'Web3Auth');
 
+      // ここでスマートコントラクトのFaucetContractを呼び出すAPIを呼べば初期資金を提供できる
+
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
     } catch (error) {
