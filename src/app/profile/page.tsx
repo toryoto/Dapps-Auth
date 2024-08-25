@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../lib/supabase/supabase';
 
 interface Profile {
   name: string;
@@ -28,20 +27,24 @@ export default function ProfilePage() {
   const fetchProfile = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('name, bio')
-      .eq('user_id', user.id)
-      .single();
-
-    if (error) {
+    try {
+      const response = await fetch(`/api/v1/users/profile?userId=${user.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (!response.ok) throw new Error('Failed to fetch profile');
+  
+      const { user: fetchedProfile } = await response.json();
+      setProfile({
+        name: fetchedProfile.name ?? '',
+        bio: fetchedProfile.bio ?? '',
+      });
+    } catch (error) {
       console.error('Error fetching profile:', error);
       alert('Failed to fetch profile. Please try again.');
-    } else {
-      setProfile({
-        name: data?.name ?? '',
-        bio: data?.bio ?? '',
-      });
     }
   };
 
@@ -55,21 +58,27 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
-    if (!user) return;
-
     setIsSaving(true);
-    const { error } = await supabase
-      .from('user_profiles')
-      .update({ name: profile.name, bio: profile.bio })
-      .eq('user_id', user.id);
+    try {
+      const response = await fetch('/api/v1/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user?.id, name: profile.name, bio: profile.bio }),
+      });
 
-    setIsSaving(false);
-    if (error) {
+      if (!response.ok) throw new Error('Failed to update profile');
+  
+      const result = await response.json();
+      console.log(result)
+      alert('Profile updated successfully!');
+      setIsEditing(false);
+    } catch (error) {
       console.error('Error updating profile:', error);
       alert('Failed to update profile. Please try again.');
-    } else {
-      setIsEditing(false);
-      alert('Profile updated successfully!');
+    } finally {
+      setIsSaving(false)
     }
   };
 
